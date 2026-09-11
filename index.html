@@ -490,12 +490,14 @@
       </div>
       <div class="form-card">
         <h3>Prefere deixar sua mensagem por aqui?</h3>
-        <p>Preencha os campos abaixo — depois é só copiar e enviar pelo seu e-mail ou WhatsApp.</p>
-        <form class="form-row" id="contactForm">
-          <input type="text" id="cfNome" placeholder="Seu nome" required>
-          <input type="email" id="cfEmail" placeholder="Seu e-mail" required>
-          <textarea rows="4" id="cfMsg" placeholder="Sua mensagem" required></textarea>
+        <p>Preencha os campos abaixo e clique em enviar — a mensagem cai direto na nossa caixa de entrada.</p>
+        <form class="form-row" id="contactForm" action="https://formspree.io/f/mvkoldnl" method="POST">
+          <input type="text" name="name" placeholder="Seu nome" required>
+          <input type="email" name="email" placeholder="Seu e-mail" required>
+          <textarea rows="4" name="message" placeholder="Sua mensagem" required></textarea>
+          <input type="hidden" name="_subject" value="Novo contato pelo site — Bosque dos Saberes">
           <button type="submit">Enviar mensagem</button>
+          <p id="formStatus" style="display:none; margin:10px 0 0; font-size:.9rem;"></p>
         </form>
       </div>
     </div>
@@ -521,14 +523,30 @@
   document.getElementById('year').textContent = new Date().getFullYear();
 
   var contactForm = document.getElementById('contactForm');
+  var formStatus = document.getElementById('formStatus');
   contactForm.addEventListener('submit', function(e){
     e.preventDefault();
-    var nome = document.getElementById('cfNome').value;
-    var email = document.getElementById('cfEmail').value;
-    var msg = document.getElementById('cfMsg').value;
-    var assunto = encodeURIComponent('Contato pelo site - ' + nome);
-    var corpo = encodeURIComponent(msg + '\n\nE-mail para resposta: ' + email);
-    window.location.href = 'mailto:bosquedossaberes@gmail.com?subject=' + assunto + '&body=' + corpo;
+    var data = new FormData(contactForm);
+    formStatus.style.display = 'block';
+    formStatus.style.color = 'rgba(250,246,236,0.85)';
+    formStatus.textContent = 'Enviando...';
+    fetch(contactForm.action, {
+      method: 'POST',
+      body: data,
+      headers: { 'Accept': 'application/json' }
+    }).then(function(response){
+      if (response.ok) {
+        formStatus.style.color = '#D8AE6C';
+        formStatus.textContent = 'Mensagem enviada com sucesso! Responderemos em breve.';
+        contactForm.reset();
+      } else {
+        formStatus.style.color = '#e0a0a0';
+        formStatus.textContent = 'Não foi possível enviar agora. Tente novamente ou fale pelo WhatsApp.';
+      }
+    }).catch(function(){
+      formStatus.style.color = '#e0a0a0';
+      formStatus.textContent = 'Não foi possível enviar agora. Tente novamente ou fale pelo WhatsApp.';
+    });
   });
   var toggle = document.getElementById('menuToggle');
   var links = document.getElementById('navlinks');
